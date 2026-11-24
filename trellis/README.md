@@ -1,4 +1,4 @@
-# Trellis (v0.1.0)
+# Trellis (v0.1.1)
 
 *Your agent's lessons grow into rules, and get pruned when they stop paying off.*
 
@@ -117,6 +117,7 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 | Agent-memory stores (e.g. [agentkb](https://github.com/isaac-flath/agentkb), MCP memory servers) | Automatic capture and recall of session knowledge | They automate capture; Trellis is the curation layer (reinforce, promote, demote). Capture wasn't where things failed in practice, upkeep was |
 
 ## Changelog
+- **0.1.1**: fixes from a code review. `check-commit` now catches emptied or shrunk files with non-ASCII names and files that were moved and shrunk. SessionStart recalls lessons tagged `repo: *` after the repo's own lessons and matches task names only against whole folder names. SessionEnd counts a session as journaled only if it *wrote* a journal file for one of the days it spanned, not if it merely read today's. `usage` no longer counts sibling folders (such as `home-repo-workspace`) as the home repo, and counts each lesson change once. `journal-expire` keeps files that name an open task anywhere, not just in a heading. A configured home repo that is invalid is reported instead of silently falling back to a default location. The smoke test now isolates its checks and covers each fix.
 - **0.1.0**: first public release. Task lifecycle (new, park, handoff, close with archive and journal digest), start-day / end-session / review / capture / commit routines, lessons with history that are reinforced, recalled at session start, promoted and demoted. Helper script (`locate`, `now`, `status`, `check-commit`, `lessons`, `usage`, `journal-expire`, `rules`), SessionStart/SessionEnd hooks, adoption of existing repos (including `AGENTS.md` / Home Repo pattern repos and Obsidian vaults), a de-identified `system-report` routine, 7 eval cases and a smoke test. Shaped by four private pre-release iterations and two usage reports; their findings are in the tables above.
 
 ## Known gaps / next questions
@@ -127,7 +128,7 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 - Second report (baseline: the original prompt-based setup the skill was designed from, not Trellis): task context loaded early in all 3 coding sessions but only at close in all 4 review/summary sessions; 33 lessons, 0 reinforced, read before work in 1 of 7 sessions; journal written only by closes. The first report after that machine switches to the skill should show whether the SessionStart pointer and lesson recall change those numbers.
 - Ideas not built yet: a `## Tried` (what didn't work) section, decisions linked to the ones they replace.
 - Does the SessionStart pointer actually move context loading to the start of work? The next report should measure this.
-- `pending.md` uses a heuristic (≥3 user turns, no journal path written). It may be noisy.
+- `pending.md` uses a heuristic (≥3 user turns, no journal file written for a day the session spanned). It may be noisy.
 - Matching a task to the current directory uses the task name and `Repos:` line; repo names that also appear as ordinary folder names may give false matches.
 - Two archive formats existed in the source repo; the template sets one. Migrating old archives is not automated.
 - Scopes (work / personal / family) are a recurring idea in personal-context writing, but every usage report so far is work tasks only. Not built; revisit if non-work use shows up.

@@ -42,21 +42,30 @@ SECRET_PATTERNS = [
 # ---------- helpers ----------
 
 def locate() -> Path | None:
-    candidates = []
-    if os.environ.get("HOME_REPO"):
-        candidates.append(Path(os.environ["HOME_REPO"]).expanduser())
-    if CONFIG.is_file():
+    explicit = []  # (where the setting came from, path)
+    env, has_config = os.environ.get("HOME_REPO"), CONFIG.is_file()
+    configured = bool(env) or has_config
+    if env:
+        explicit.append(("$HOME_REPO", Path(env).expanduser()))
+    if has_config:
         try:
-            candidates.append(Path(json.loads(CONFIG.read_text(encoding="utf-8"))["path"]).expanduser())
-        except (ValueError, KeyError, OSError):
-            pass
+            explicit.append((str(CONFIG), Path(json.loads(CONFIG.read_text(encoding="utf-8"))["path"]).expanduser()))
+        except (ValueError, KeyError, OSError, TypeError):
+            print(f"home-repo: cannot read {CONFIG}", file=sys.stderr)
+    candidates = [p for _, p in explicit]
     cwd = Path.cwd()
     if (cwd / "tasks" / "active.md").is_file():
         candidates.append(cwd)  # running inside a home repo
-    candidates += [Path.home() / "home-repo", Path.home() / "projects" / "home-repo"]
+    if not configured:
+        # default locations only when nothing is configured: a configured repo that isn't valid
+        # must not silently hand over to another repo (e.g. an old one in ~/projects/home-repo)
+        candidates += [Path.home() / "home-repo", Path.home() / "projects" / "home-repo"]
     for c in candidates:
         if map_file(c) is not None:
             return c.resolve()
+    for src, p in explicit:
+        print(f"home-repo: {p} (from {src}) has no CLAUDE.md or AGENTS.md; not falling back to a default location",
+              file=sys.stderr)
     return None
 
 
@@ -182,22 +191,33 @@ def cmd_check_commit() -> int:
         print(f"check-commit: {repo} is not a git repository; nothing to check")
         return 1
     findings: list[str] = []
-    has_head =git(repo, "rev-parse", "--verify", "HEAD").strip() != ""
+    has_head = git(repo, "rev-parse", "--verify", "HEAD").strip() != ""
 
-    for line in git(repo, "diff", "--cached", "--name-status").splitlines():
-        parts = line.split("\t")
-        status, path = parts[0], parts[-1]
-        if status.startswith("D"):
+    # -z: paths come unquoted (non-ASCII names stay usable). -M30%: a moved file that lost most of its
+    # lines still shows as a rename (at git's default 50% it would show as a plain deletion).
+    # Entries are status\0path\0, or status\0old\0new\0 for renames/copies.
+    tokens = git(repo, "diff", "--cached", "--name-status", "-z", "-M30%").split("\0")
+    i = 0
+    while i < len(tokens) and tokens[i]:
+        status = tokens[i]
+        if status[0] in "RC":
+            old, path = tokens[i + 1], tokens[i + 2]
+            i += 3
+        else:
+            old = path = tokens[i + 1]
+            i += 2
+        label = path if old == path else f"{old} -> {path} ({'renamed' if status[0] == 'R' else 'copied'})"
+        if status[0] == "D":
             findings.append(f"DELETED: {path}")
             continue
-        if status.startswith("M") and has_head:
-            before = count_lines(git(repo, "show", f"HEAD:{parts[1]}"))
+        if status[0] in "MRC" and has_head:
+            before = count_lines(git(repo, "show", f"HEAD:{old}"))
             after_text = git(repo, "show", f":{path}")
             after = count_lines(after_text)
             if before >= 3 and len([l for l in after_text.splitlines() if l.strip()]) <= 1:
-                findings.append(f"EMPTIED: {path} ({before} -> {after} lines)")
+                findings.append(f"EMPTIED: {label} ({before} -> {after} lines)")
             elif before >= 10 and after < before / 2:
-                findings.append(f"SHRANK: {path} ({before} -> {after} lines)")
+                findings.append(f"SHRANK: {label} ({before} -> {after} lines)")
 
     for line in git(repo, "diff", "--cached", "-U0").splitlines():
         if line.startswith("+") and not line.startswith("+++"):
@@ -232,24 +252,30 @@ def parse_lessons(repo: Path) -> list[dict]:
             continue
         if not raw.startswith("- "):
             continue
-        item = {"text": raw[2:].strip(), "area": area, "repo": [], "seen": None, "last": None,
-                "from": None, "promoted": None, "demoted": None, "cost": None, "line": i, "raw": raw}
-        m = LESSON_META.search(raw)
-        if m:
-            item["text"] = raw[2:m.start()].strip()
-            for part in m.group("meta").split(";"):
-                if ":" not in part:
-                    continue
-                k, v = (s.strip() for s in part.split(":", 1))
-                k = k.lower()
-                if k == "repo":
-                    item["repo"] = [r.strip().lower() for r in v.split(",") if r.strip()]
-                elif k == "seen":
-                    item["seen"] = int(re.sub(r"\D", "", v) or 0)
-                elif k in ("last", "from", "promoted", "demoted", "cost"):
-                    item[k] = v
-        out.append(item)
+        out.append({**parse_lesson_line(raw), "area": area, "line": i, "raw": raw})
     return out
+
+
+def parse_lesson_line(raw: str) -> dict:
+    """One "- text (meta)" lesson line: text, repo(list), seen, last, from, promoted, demoted, cost."""
+    m = LESSON_META.search(raw)
+    item = {"text": raw[2:m.start() if m else None].strip(), "repo": [], "seen": None, "last": None,
+            "from": None, "promoted": None, "demoted": None, "cost": None}
+    if m:
+        # fields are split by ";" (or by "," when a "key:" follows, so "repo: a, b" stays whole)
+        for part in re.split(r";|,(?=\s*[\w-]+\s*:)", m.group("meta")):
+            if ":" not in part:
+                continue
+            k, v = (s.strip() for s in part.split(":", 1))
+            k = k.lower()
+            if k == "repo":
+                item["repo"] = [r.strip().lower() for r in v.split(",") if r.strip()]
+            elif k == "seen":
+                n = re.match(r"\d+", v)  # leading number only: "3/5" is 3, not 35
+                item["seen"] = int(n.group()) if n else 0
+            elif k in ("last", "from", "promoted", "demoted", "cost"):
+                item[k] = v
+    return item
 
 
 def current_repo_name(cwd: Path) -> str | None:
@@ -261,15 +287,24 @@ def current_repo_name(cwd: Path) -> str | None:
 
 
 def lessons_for(repo: Path, cwd: Path) -> list[dict]:
+    """Lessons tagged for the current repo, then lessons tagged `*` (anywhere).
+
+    Repo lessons: most-reinforced, then most recent. `*` lessons follow: those whose area matches
+    an area of the repo's own lessons first, then high-cost ones, then most-reinforced."""
     name = current_repo_name(cwd)
     parts = {p.lower() for p in cwd.parts}
-    hits = []
+    hits, anywhere = [], []
     for l in parse_lessons(repo):
         tags = [t for t in l["repo"] if t != "*"]
         if (name and name in tags) or (parts & set(tags)):
             hits.append(l)
-    hits.sort(key=lambda l: (l["seen"] or 0, l["last"] or ""), reverse=True)  # most-reinforced, then most recent
-    return hits
+        elif "*" in l["repo"]:
+            anywhere.append(l)
+    hits.sort(key=lambda l: (l["seen"] or 0, l["last"] or ""), reverse=True)
+    areas = {l["area"] for l in hits}
+    anywhere.sort(key=lambda l: (l["area"] in areas, (l["cost"] or "").lower().startswith("high"),
+                                 l["seen"] or 0, l["last"] or ""), reverse=True)
+    return hits + anywhere
 
 
 def _days_since(date: str | None) -> int | None:
@@ -339,11 +374,14 @@ WRITE_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 SHELL_TOOLS = {"Bash", "PowerShell"}
 # Repo-relative files named in a shell command, and signs that the command writes rather than reads.
 SHELL_FILE = re.compile(r"(?<![\w.-])((?:tasks|journal|references|meta)/[\w./-]+?\.md|CLAUDE\.md|inbox\.md|GUIDE\.md)\b")
+JOURNAL_FILE = re.compile(r"journal/(\d{4}-\d{2}-\d{2})\.md")
+TIMESTAMP = re.compile(r'"timestamp"\s*:\s*"(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})[^"]*?(Z|[+-]\d{2}:\d{2})?"')
 SHELL_WRITE = re.compile(r"(?<![<2&])>{1,2}(?!&)|\btee\b|\bsed\s+-i|\b(?:mv|rm|cp)\s|Set-Content|Add-Content|Out-File|Remove-Item|Move-Item")
 
 
 def _norm(p: str) -> str:
-    return p.replace("\\", "/").rstrip("/").lower()
+    """Lowercase, forward slashes, runs of slashes collapsed (JSON-escaped backslashes, UNC paths)."""
+    return re.sub(r"/+", "/", p.replace("\\", "/")).rstrip("/").lower()
 
 
 def _tool_uses(obj):
@@ -356,11 +394,62 @@ def _tool_uses(obj):
                 yield block.get("name", ""), block.get("input") or {}
 
 
+def _tool_target(name: str, inp: dict) -> tuple[str, bool] | None:
+    """(what a tool call acts on, whether it writes): the command for shell tools, else the file path."""
+    if name in SHELL_TOOLS:
+        cmd = str(inp.get("command") or "")
+        return cmd, bool(SHELL_WRITE.search(cmd))
+    path = inp.get("file_path") or inp.get("path") or inp.get("notebook_path")
+    return (str(path), name in WRITE_TOOLS) if path else None
+
+
+def lesson_changes(log: str) -> tuple[int, int, int, int]:
+    """Count (new, reinforced, promoted, demoted) lesson changes in `git log -p` output.
+
+    Each added lesson line is paired with the line it replaced in the same hunk (same text first,
+    then in order, which covers rewording), and only fields that changed are counted."""
+    new = reinforced = promoted = demoted = 0
+    hunks, cur = [], ([], [])
+    for line in log.splitlines() + ["@@"]:
+        if line.startswith(("@@", "diff --git")):
+            if cur[0] or cur[1]:
+                hunks.append(cur)
+            cur = ([], [])
+        elif line.startswith("-- "):
+            cur[0].append(parse_lesson_line(line[1:]))
+        elif line.startswith("+- "):
+            cur[1].append(parse_lesson_line(line[1:]))
+    for removed, added in hunks:
+        pairs, left = [], []
+        for a in added:
+            match = next((r for r in removed if r["text"].lower() == a["text"].lower()), None)
+            if match:
+                removed.remove(match)
+                pairs.append((match, a))
+            else:
+                left.append(a)
+        pairs += zip(removed, left)
+        new += max(0, len(left) - len(removed))
+        for old, a in pairs:
+            reinforced += (a["seen"] or 0) > (old["seen"] or 0)
+            promoted += a["promoted"] is not None and old["promoted"] is None  # "promoted:" with no value counts
+            demoted += a["demoted"] is not None and old["demoted"] is None
+    return new, reinforced, promoted, demoted
+
+
 def cmd_usage(args: list[str]) -> int:
     repo = require_repo()
     days = int(args[0]) if args and args[0].isdigit() else 30
     since = dt.datetime.now().timestamp() - days * 86400
-    root = _norm(str(repo)) + "/"
+    base = _norm(str(repo))
+    root = base + "/"
+    # the whole repo path, not a sibling folder such as home-repo-workspace
+    whole_base = re.compile(re.escape(base) + r"(?![\w.-])")
+    name_hint = re.compile(re.escape(repo.name), re.I).search  # no-copy gate before normalizing a line
+
+    def mentions_repo(text: str) -> bool:
+        return bool(name_hint(text)) and bool(whole_base.search(_norm(text)))
+
     reads: dict[str, set] = {}
     writes: dict[str, int] = {}
     sessions_total = sessions_touching = 0
@@ -375,36 +464,32 @@ def cmd_usage(args: list[str]) -> int:
         sessions_total += 1
         touched = False
         for line in read(t).splitlines():
-            # JSON escapes backslashes, so collapse runs of slashes before the cheap substring test
-            if root.rstrip("/") not in re.sub(r"/+", "/", _norm(line)):
+            if not mentions_repo(line):
                 continue
             try:
                 obj = json.loads(line)
             except ValueError:
                 continue
             for name, inp in _tool_uses(obj):
+                target = _tool_target(name, inp)
+                if not target:
+                    continue
+                what, is_write = target
                 if name in SHELL_TOOLS:
-                    cmd = str(inp.get("command") or "")
-                    if root.rstrip("/") not in re.sub(r"/+", "/", _norm(cmd)):
+                    if not mentions_repo(what):
                         continue
-                    touched = True
-                    is_write = bool(SHELL_WRITE.search(cmd))
-                    for rel in {m.lower() for m in SHELL_FILE.findall(cmd.replace("\\", "/"))}:
-                        if is_write:
-                            writes[rel] = writes.get(rel, 0) + 1
-                        else:
-                            reads.setdefault(rel, set()).add(t.stem)
-                    continue
-                path = inp.get("file_path") or inp.get("path") or inp.get("notebook_path") or ""
-                n = _norm(str(path))
-                if not n.startswith(root.rstrip("/")):
-                    continue
-                rel = n[len(root):] or "."
+                    rels = {m.lower() for m in SHELL_FILE.findall(what.replace("\\", "/"))}
+                else:
+                    n = _norm(what)
+                    if not (n == base or n.startswith(root)):
+                        continue
+                    rels = {n[len(root):] or "."} if is_write or name in READ_TOOLS else set()
                 touched = True
-                if name in READ_TOOLS:
-                    reads.setdefault(rel, set()).add(t.stem)
-                elif name in WRITE_TOOLS:
-                    writes[rel] = writes.get(rel, 0) + 1
+                for rel in rels:
+                    if is_write:
+                        writes[rel] = writes.get(rel, 0) + 1
+                    else:
+                        reads.setdefault(rel, set()).add(t.stem)
         sessions_touching += touched
 
     print(f"window: last {days} days; transcripts scanned: {sessions_total}; touching home repo: {sessions_touching}")
@@ -419,13 +504,8 @@ def cmd_usage(args: list[str]) -> int:
     if never:
         print(f"never read in window ({len(never)}): " + ", ".join(sorted(never)))
 
-    # Lesson reinforcement from git history: added lines with seen >= 2 vs. seen: 1
     log = git(repo, "log", f"--since={days}.days", "-p", "--format=", "--", "references/lessons.md")
-    added = [l for l in log.splitlines() if l.startswith("+- ")]
-    new = sum(1 for l in added if re.search(r"seen:\s*1\b", l))
-    reinforced = sum(1 for l in added if re.search(r"seen:\s*([2-9]|\d{2,})\b", l))
-    promoted = sum(1 for l in added if "promoted:" in l)
-    demoted = sum(1 for l in added if "demoted:" in l)
+    new, reinforced, promoted, demoted = lesson_changes(log)
     if is_git_repo(repo):
         print(f"lessons in window: {new} new, {reinforced} reinforced, {promoted} promoted, {demoted} demoted (from git history)")
     else:
@@ -438,6 +518,8 @@ def cmd_journal_expire(args: list[str]) -> int:
     weeks = int(args[0]) if args and args[0].isdigit() else 6
     cutoff = dt.date.today() - dt.timedelta(weeks=weeks)
     live = {p.stem.lower() for p in (repo / "tasks").glob("*.md")} - {"active", "backlog"}
+    # an open task named anywhere in a file (heading or bullet), as a whole word
+    named = re.compile(r"(?<![\w-])(" + "|".join(map(re.escape, sorted(live, key=len, reverse=True))) + r")(?![\w-])") if live else None
     expirable, kept = [], []
     for j in sorted((repo / "journal").glob("*.md")):
         try:
@@ -446,8 +528,7 @@ def cmd_journal_expire(args: list[str]) -> int:
             continue
         if day >= cutoff:
             continue
-        heads = {h.split()[0].lower() for h in re.findall(r"^## (.+)$", read(j), re.M) if h.split()}
-        still_open = sorted(heads & live)
+        still_open = sorted(set(named.findall(read(j).lower()))) if named else []
         (kept if still_open else expirable).append((j.relative_to(repo).as_posix(), still_open))
     print(f"journal files older than {weeks} weeks: {len(expirable) + len(kept)}")
     for f, _ in expirable:
@@ -472,8 +553,10 @@ def cmd_hook_session_start() -> int:
     cwd = Path(data.get("cwd") or os.getcwd())
     lines = [f"[home-repo] Personal context repo: {repo}. Use the home-repo skill for day/session/task routines."]
 
-    # Does this directory belong to a task? Match the cwd against task names and "Repos:" lines.
+    # Does this directory belong to a task? Match whole cwd path components against task names
+    # and "Repos:" lines (a substring test would match task "api" in /work/orders-api).
     hits = []
+    cwd_parts = {p.lower() for p in cwd.parts}
     for tf in (repo / "tasks").glob("*.md"):
         if tf.name in ("active.md", "backlog.md"):
             continue
@@ -482,8 +565,7 @@ def cmd_hook_session_start() -> int:
         m = re.search(r"repos:\s*([^\n(|]+)", head)
         if m:
             names |= {n.strip(" `").lower() for n in m.group(1).split(",") if n.strip()}
-        cwd_parts = {p.lower() for p in cwd.parts}
-        if names & cwd_parts or tf.stem.lower() in str(cwd).lower():
+        if names & cwd_parts:
             hits.append(tf.relative_to(repo).as_posix())
     if hits:
         lines.append(f"[home-repo] This directory looks related to: {', '.join(hits[:3])}. Read it before starting work.")
@@ -510,22 +592,44 @@ def cmd_hook_session_end() -> int:
     data = _hook_input()
     transcript = data.get("transcript_path") or ""
     cwd = data.get("cwd") or ""
-    text = read(Path(transcript)) if transcript else ""
+    if cwd and Path(cwd).resolve() == repo:
+        return 0  # sessions maintaining the repo itself journal in-line
+    try:
+        lines = open(transcript, encoding="utf-8", errors="replace") if transcript else []
+    except OSError:
+        lines = []
 
     user_turns = 0  # prompts the user typed; tool results are also "user" records, so don't count those
-    for l in text.splitlines():
-        if '"user"' in l:
-            try:
-                user_turns += sum(1 for _ in _user_texts(json.loads(l)))
-            except ValueError:
-                pass
+    stamps: set[tuple[str, str]] = set()  # (minute, offset) of every record: the dates the session spanned
+    journal_writes: set[str] = set()  # dates of journal files the session wrote
+    for l in lines:  # one pass, one line in memory at a time
+        m = TIMESTAMP.search(l)
+        if m:
+            stamps.add(m.groups(""))
+        # only typed prompts and journal-related tool calls need parsing; tool results are the bulk
+        if not ('"user"' in l and '"tool_result"' not in l) and not ('"tool_use"' in l and "journal" in l):
+            continue
+        try:
+            obj = json.loads(l)
+        except ValueError:
+            continue
+        user_turns += sum(1 for _ in _user_texts(obj))
+        for name, inp in _tool_uses(obj):
+            target = _tool_target(name, inp)
+            if target and target[1]:  # reading today's journal is not writing one
+                journal_writes |= set(JOURNAL_FILE.findall(target[0].replace("\\", "/")))
+    if hasattr(lines, "close"):
+        lines.close()
+    days = {dt.date.today().isoformat()}
+    for minute, tz in stamps:  # to the minute: enough for the local date
+        try:
+            ts = dt.datetime.fromisoformat(minute + ("+00:00" if tz == "Z" else tz))
+            days.add(ts.astimezone().date().isoformat())  # no offset: taken as local time
+        except ValueError:
+            pass
     if user_turns < 3:
         return 0  # trivial session; not worth journaling
-    if Path(cwd).resolve() == repo if cwd else False:
-        return 0  # sessions maintaining the repo itself journal in-line
-    today = dt.date.today().isoformat()
-    journal_markers = (f"journal/{today}", f"journal\\\\{today}", f"journal\\{today}")
-    if any(m in text for m in journal_markers):
+    if journal_writes & days:
         return 0  # the session already wrote a journal entry
 
     now = dt.datetime.now()

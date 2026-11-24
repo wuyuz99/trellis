@@ -43,7 +43,7 @@ Checks are earned, not assumed: if a lesson has `seen: 1` and low cost, keep it 
 
 ## 3. Recall at the right moment
 
-The agent shouldn't have to remember to search. The SessionStart hook works out the current repo from the working directory and lists the lessons tagged for it (or `*` with a matching area), up to a short limit. A matching task file is pointed to the same way. Before starting work in a repo, skim those lessons. When one of them saves you from a mistake, reinforce it.
+The agent shouldn't have to remember to search. The SessionStart hook works out the current repo from the working directory and lists the lessons tagged for it, then lessons tagged `*` (those in the same areas as the repo's lessons first, then high-cost ones), up to a short limit. A matching task file is pointed to the same way. Before starting work in a repo, skim those lessons. When one of them saves you from a mistake, reinforce it.
 
 ## 4. Demotion: remove what isn't needed
 

@@ -1,6 +1,6 @@
 {
   "name": "trellis",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Trellis: a personal, cross-project context repo for coding agents. Lessons grow into rules and checks, and get pruned when they stop paying off. Implements the Home Repo pattern with a task lifecycle (new, work, close, archive), journal and lessons kept as side effects, progressive disclosure so only what's needed gets loaded.",
   "author": {
     "name": "Isaac"
