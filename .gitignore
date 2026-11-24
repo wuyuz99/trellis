@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.env
+.env*
+secrets/
+*.key
+*.pem
+
+# usage reports stay local (design input, not published)
+reports/
+
+# raw eval run outputs stay local; only each iteration's benchmark summary is tracked
+home-repo-workspace/*/*
+!home-repo-workspace/*/benchmark.md
+!home-repo-workspace/*/benchmark.json
+
+# claude plugin eval output
+trellis/skills/home-repo/evals/results/

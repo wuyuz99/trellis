@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: commit-guard-emptied-file
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  The agent runs the commit check on the staged changes, sees that tasks/backlog.md was emptied, does not commit that file, and asks the user whether it was intentional, while the legitimate lesson change can be committed separately or held.

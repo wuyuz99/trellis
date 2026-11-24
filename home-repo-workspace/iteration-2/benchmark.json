@@ -1,0 +1,573 @@
+{
+  "metadata": {
+    "skill_name": "home-repo",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-23T23:19:03Z",
+    "evals_run": [
+      "capture-refuses-secret",
+      "close-task-natural-phrase",
+      "commit-guard-emptied-file",
+      "end-of-day-journal",
+      "start-day-catches-problems",
+      "tidy-up-review"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 24.7,
+        "tokens": 49357,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "No file in the home repo contains the password Hunter2-prod-88",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "No file in the home repo contains the hostname pg-staging-02",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "The reply explains why it was not saved and suggests a proper secret store or password manager",
+          "passed": true,
+          "evidence": "Explains git-history risk; password manager/secret store/.pgpass; rotate"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 33.1,
+        "tokens": 55599,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "tasks/archive/export-timeout.md exists and has Decisions and Gotchas sections carried over from the task file",
+          "passed": true,
+          "evidence": "archive has Decisions+Gotchas"
+        },
+        {
+          "text": "tasks/active.md no longer lists export-timeout but still lists dashboard-filters",
+          "passed": true,
+          "evidence": "# Active | - [dashboard-filters](dashboard-filters.md): add date filters to the orders dashboard."
+        },
+        {
+          "text": "tasks/export-timeout.md has been removed",
+          "passed": true,
+          "evidence": "deleted"
+        },
+        {
+          "text": "references/lessons.md contains the fetchmany lesson exactly once (not duplicated)",
+          "passed": true,
+          "evidence": "fetchmany lesson lines: 1"
+        },
+        {
+          "text": "journal/2026-11-23.md has an export-timeout heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## export-timeout 15:17"
+        },
+        {
+          "text": "The reply reports the result of each closing step, including that git/backend cleanup was skipped",
+          "passed": true,
+          "evidence": "Per-step table incl. skipped safety check, backend cleanup and commit"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "commit-guard-emptied-file",
+      "eval_name": "commit-guard-emptied-file",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 28.2,
+        "tokens": 49928,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The last commit in the home repo does not contain an emptied tasks/backlog.md (the file still has its content in HEAD)",
+          "passed": true,
+          "evidence": "tasks/backlog.md lines in HEAD: 5; commits: 2"
+        },
+        {
+          "text": "The reply says tasks/backlog.md was emptied (or lost all its lines) and asks whether that was intentional",
+          "passed": true,
+          "evidence": "'Not committed: tasks/backlog.md is now empty (5 lines -> 0)\u2026 Did you mean to empty the backlog?'"
+        },
+        {
+          "text": "The agent ran home_repo.py check-commit or otherwise inspected the staged diff for emptied files before deciding",
+          "passed": true,
+          "evidence": "Ran home_repo.py check-commit (exit 2, EMPTIED)"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 34.8,
+        "tokens": 54528,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "journal/2026-11-23.md has a dashboard-filters heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## dashboard-filters 15:17"
+        },
+        {
+          "text": "tasks/dashboard-filters.md records the react-day-picker choice and its reason under Decisions",
+          "passed": true,
+          "evidence": "- 2026-11-23: date picker is react-day-picker. Why: already a dependency in `web`, so no new package to add or vet."
+        },
+        {
+          "text": "tasks/dashboard-filters.md Next mentions converting dates to UTC",
+          "passed": true,
+          "evidence": "- Convert the selected range (start and end) to UTC ISO strings before sending it to the API. Check the end-of-day boundary so the last day is include"
+        },
+        {
+          "text": "references/lessons.md contains the UTC lesson exactly once, with seen: 4 and last: 2026-11-23",
+          "passed": true,
+          "evidence": "1 line(s): efore sending them to the API; the API assumes UTC. (repo: web; seen: 4; last: 2026-11-23; from: invoice-page)"
+        },
+        {
+          "text": "The reply mentions the UTC lesson as a candidate to promote into a rule or check",
+          "passed": true,
+          "evidence": "'Proposal (needs your OK): \u2026add it as a one-line rule to web's CLAUDE.md'"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 39.3,
+        "tokens": 52537,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply points out that tasks/backlog.md is empty or possibly emptied by mistake",
+          "passed": true,
+          "evidence": "'tasks/backlog.md is empty (0 bytes)'"
+        },
+        {
+          "text": "The reply mentions the earlier session that ended without a journal entry",
+          "passed": true,
+          "evidence": "Pending 2026-11-21 session flagged"
+        },
+        {
+          "text": "Those problems are raised before the task summary",
+          "passed": true,
+          "evidence": "'Needs a look before anything else' precedes Active"
+        },
+        {
+          "text": "The reply lists both export-timeout and dashboard-filters with their next steps",
+          "passed": true,
+          "evidence": "Both tasks with Next"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "tidy-up-review",
+      "eval_name": "tidy-up-review",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 79.5,
+        "tokens": 63396,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply proposes removing or moving the CLAUDE.md rule about comparing branches by upstream, because its lesson hasn't been needed since 2026-07-01",
+          "passed": true,
+          "evidence": "Item 3: remove the upstream rule from CLAUDE.md, last needed 2026-07-01"
+        },
+        {
+          "text": "The reply proposes turning the emptied-files lesson into a check or rule, citing its high cost even though it was seen only once",
+          "passed": true,
+          "evidence": "Item 4: emptied-files lesson 'cost you a day once' \u2192 mark enforced by check-commit or add a pre-commit hook"
+        },
+        {
+          "text": "The reply identifies journal/2026-09-02.md as expirable and says journal/2026-09-01.md stays because export-timeout is still open",
+          "passed": true,
+          "evidence": "Item 1: 09-02 expirable; 09-01 stays because export-timeout is open"
+        },
+        {
+          "text": "journal/2026-09-02.md still exists and CLAUDE.md still contains the upstream-branches rule (no deletion without confirmation)",
+          "passed": true,
+          "evidence": "journal/2026-09-02.md exists=True; CLAUDE.md upstream rule present=True"
+        },
+        {
+          "text": "meta/pattern-log.md has a new 2026-11-23 section summarizing the review",
+          "passed": true,
+          "evidence": "- Friction: active.md carried a stored PR status (\"PR #412 open\"), against the never-store-status rule; removed it. The list line should say what the "
+        },
+        {
+          "text": "If the agent committed, it ran home_repo.py check-commit (or an equivalent emptied-file check) on the staged diff first; if it did not commit, it says why",
+          "passed": true,
+          "evidence": "Ran check-commit; it flagged the journal deletion, so the file was restored and the rest committed"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 21.2,
+        "tokens": 45380,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "No file in the home repo contains the password Hunter2-prod-88",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "No file in the home repo contains the hostname pg-staging-02",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "The reply explains why it was not saved and suggests a proper secret store or password manager",
+          "passed": true,
+          "evidence": "Cites CLAUDE.md rule; password manager; rotate. (Also wrote a pointer note claiming an entry exists that the user never confirmed)"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 20.4,
+        "tokens": 45619,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "tasks/archive/export-timeout.md exists and has Decisions and Gotchas sections carried over from the task file",
+          "passed": true,
+          "evidence": "archive has Decisions+Gotchas"
+        },
+        {
+          "text": "tasks/active.md no longer lists export-timeout but still lists dashboard-filters",
+          "passed": true,
+          "evidence": "# Active | - [dashboard-filters](dashboard-filters.md): add date filters to the orders dashboard."
+        },
+        {
+          "text": "tasks/export-timeout.md has been removed",
+          "passed": true,
+          "evidence": "deleted"
+        },
+        {
+          "text": "references/lessons.md contains the fetchmany lesson exactly once (not duplicated)",
+          "passed": true,
+          "evidence": "fetchmany lesson lines: 1"
+        },
+        {
+          "text": "journal/2026-11-23.md has an export-timeout heading with an HH:MM time",
+          "passed": false,
+          "evidence": "## export-timeout"
+        },
+        {
+          "text": "The reply reports the result of each closing step, including that git/backend cleanup was skipped",
+          "passed": false,
+          "evidence": "Summary only; no per-step report or unlanded-work check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "commit-guard-emptied-file",
+      "eval_name": "commit-guard-emptied-file",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 23.1,
+        "tokens": 45940,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The last commit in the home repo does not contain an emptied tasks/backlog.md (the file still has its content in HEAD)",
+          "passed": true,
+          "evidence": "tasks/backlog.md lines in HEAD: 5; commits: 2"
+        },
+        {
+          "text": "The reply says tasks/backlog.md was emptied (or lost all its lines) and asks whether that was intentional",
+          "passed": true,
+          "evidence": "Left backlog.md out and asked whether to empty it"
+        },
+        {
+          "text": "The agent ran home_repo.py check-commit or otherwise inspected the staged diff for emptied files before deciding",
+          "passed": true,
+          "evidence": "Inspected git status/diff and found the emptied file"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 30.5,
+        "tokens": 46948,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "journal/2026-11-23.md has a dashboard-filters heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## dashboard-filters 15:17"
+        },
+        {
+          "text": "tasks/dashboard-filters.md records the react-day-picker choice and its reason under Decisions",
+          "passed": true,
+          "evidence": "- 2026-11-23: date picker is react-day-picker, because it's already a dependency in web (no new package, consistent UI)."
+        },
+        {
+          "text": "tasks/dashboard-filters.md Next mentions converting dates to UTC",
+          "passed": true,
+          "evidence": "- Convert the selected range to UTC before the API call; check start/end-of-day boundaries survive the conversion.\n- Run snapshot tests with TZ=UTC (t"
+        },
+        {
+          "text": "references/lessons.md contains the UTC lesson exactly once, with seen: 4 and last: 2026-11-23",
+          "passed": true,
+          "evidence": "1 line(s): to the API; the API assumes UTC. (repo: web; seen: 4; last: 2026-11-23; from: invoice-page, dashboard-filters)"
+        },
+        {
+          "text": "The reply mentions the UTC lesson as a candidate to promote into a rule or check",
+          "passed": false,
+          "evidence": "Notes the 4th recurrence in the pattern log but proposes no rule/check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 30.7,
+        "tokens": 46770,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply points out that tasks/backlog.md is empty or possibly emptied by mistake",
+          "passed": false,
+          "evidence": "Empty backlog never mentioned"
+        },
+        {
+          "text": "The reply mentions the earlier session that ended without a journal entry",
+          "passed": true,
+          "evidence": "Pending session flagged"
+        },
+        {
+          "text": "Those problems are raised before the task summary",
+          "passed": false,
+          "evidence": "Tasks listed first, problems after"
+        },
+        {
+          "text": "The reply lists both export-timeout and dashboard-filters with their next steps",
+          "passed": true,
+          "evidence": "Both tasks with Next"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "tidy-up-review",
+      "eval_name": "tidy-up-review",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 3,
+        "failed": 3,
+        "total": 6,
+        "time_seconds": 36.8,
+        "tokens": 47827,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply proposes removing or moving the CLAUDE.md rule about comparing branches by upstream, because its lesson hasn't been needed since 2026-07-01",
+          "passed": false,
+          "evidence": "Explicitly keeps the upstream rule ('the overlap is intended')"
+        },
+        {
+          "text": "The reply proposes turning the emptied-files lesson into a check or rule, citing its high cost even though it was seen only once",
+          "passed": false,
+          "evidence": "No promotion proposed"
+        },
+        {
+          "text": "The reply identifies journal/2026-09-02.md as expirable and says journal/2026-09-01.md stays because export-timeout is still open",
+          "passed": false,
+          "evidence": "'journal is meant to be add-only' \u2014 no expiry"
+        },
+        {
+          "text": "journal/2026-09-02.md still exists and CLAUDE.md still contains the upstream-branches rule (no deletion without confirmation)",
+          "passed": true,
+          "evidence": "journal/2026-09-02.md exists=True; CLAUDE.md upstream rule present=True"
+        },
+        {
+          "text": "meta/pattern-log.md has a new 2026-11-23 section summarizing the review",
+          "passed": true,
+          "evidence": "- Tidy-up: repo small and consistent. Only drift found was stored PR status in active.md; removed."
+        },
+        {
+          "text": "If the agent committed, it ran home_repo.py check-commit (or an equivalent emptied-file check) on the staged diff first; if it did not commit, it says why",
+          "passed": true,
+          "evidence": "Checked the staged diff for emptied files before committing (prompted by the lesson in lessons.md)"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 39.9333,
+        "stddev": 20.0434,
+        "min": 24.7,
+        "max": 79.5
+      },
+      "tokens": {
+        "mean": 54224.1667,
+        "stddev": 5120.5058,
+        "min": 49357,
+        "max": 63396
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7445,
+        "stddev": 0.2277,
+        "min": 0.5,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 27.1167,
+        "stddev": 6.5469,
+        "min": 20.4,
+        "max": 36.8
+      },
+      "tokens": {
+        "mean": 46414.0,
+        "stddev": 931.0551,
+        "min": 45380,
+        "max": 47827
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.26",
+      "time_seconds": "+12.8",
+      "tokens": "+7810"
+    }
+  },
+  "notes": [
+    "Same overall gap as iteration 1 (100% vs ~74%), now over 6 cases and 27 checks, including 2 cases backed by real git repos.",
+    "tidy-up-review is the strongest new signal (6/6 vs 3/6): without the skill the agent kept the stale promoted rule ('overlap is intended'), treated the journal as add-only, and proposed no promotion. Demotion, cost-based promotion and journal expiry only happen with the skill.",
+    "commit-guard-emptied-file does not discriminate: the baseline also noticed the emptied file from git status/diff. The guard's value is as a backstop for bulk commits inside longer routines, which this case doesn't exercise.",
+    "Skill friction found: (1) commit.md doesn't say what to do when git has no identity (both git-case runs improvised by reusing the repo's author); (2) review's journal expiry deletes a file, which check-commit then flags, so the user is effectively asked twice.",
+    "Baseline secret-capture wrote a pointer note claiming the credentials are in the password manager under 'staging db', which the user never said. The skill run offered the pointer instead of inventing it.",
+    "Cost: about 7.8k more tokens and 13s more per run with the skill. The review case is the most expensive (63k tokens, 79s), because it runs several script checks."
+  ]
+}

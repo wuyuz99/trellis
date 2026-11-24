@@ -1,0 +1,14 @@
+{
+  "name": "trellis",
+  "description": "Trellis: a personal, cross-project context repo for Claude Code that keeps itself useful.",
+  "owner": {
+    "name": "Isaac"
+  },
+  "plugins": [
+    {
+      "name": "trellis",
+      "source": "./trellis",
+      "description": "A personal, cross-project context repo for coding agents: task lifecycle, journal and lessons kept as side effects, and lessons that grow into rules and get pruned when they stop paying off."
+    }
+  ]
+}

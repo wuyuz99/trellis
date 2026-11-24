@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: close-task-natural-phrase
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  The task is archived in tasks/archive/export-timeout.md with the archive template sections; the existing fetchmany lesson in references/lessons.md is reinforced (seen 2, last = today) rather than duplicated; the task is removed from tasks/active.md and its task file deleted; a journal entry with a real clock time is appended; and the agent reports each checklist step.

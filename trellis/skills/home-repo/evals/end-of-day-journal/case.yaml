@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: end-of-day-journal
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  A journal entry for today is appended under a dashboard-filters heading with a real clock time; the date-picker decision is recorded in tasks/dashboard-filters.md under Decisions and its Next is updated to the UTC conversion; the existing UTC lesson is reinforced (seen 4, last = today) rather than duplicated and is mentioned as a promotion candidate; no PR or ticket status snapshot is stored.

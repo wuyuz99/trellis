@@ -1,0 +1,27 @@
+{
+  "description": "trellis (home-repo skill): point new sessions at the matching task file; record sessions that end without a journal entry.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" hook-session-start",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/run.sh\" hook-session-end",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

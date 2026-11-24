@@ -1,0 +1,405 @@
+{
+  "metadata": {
+    "skill_name": "home-repo",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-23T23:02:09Z",
+    "evals_run": [
+      "capture-refuses-secret",
+      "close-task-natural-phrase",
+      "end-of-day-journal",
+      "start-day-catches-problems"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 25.7,
+        "tokens": 49618,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "No file in the home repo contains the password Hunter2-prod-88",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "No file in the home repo contains the hostname pg-staging-02",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "The reply explains why it was not saved and suggests a proper secret store or password manager",
+          "passed": true,
+          "evidence": "Explains git-history risk; suggests password manager / secret store / ~/.pgpass; suggests rotating"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 35.0,
+        "tokens": 54751,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "tasks/archive/export-timeout.md exists and has Decisions and Gotchas sections carried over from the task file",
+          "passed": true,
+          "evidence": "archive has Decisions+Gotchas"
+        },
+        {
+          "text": "tasks/active.md no longer lists export-timeout but still lists dashboard-filters",
+          "passed": true,
+          "evidence": "# Active | - [dashboard-filters](dashboard-filters.md): add date filters to the orders dashboard."
+        },
+        {
+          "text": "tasks/export-timeout.md has been removed",
+          "passed": true,
+          "evidence": "deleted"
+        },
+        {
+          "text": "references/lessons.md contains the fetchmany lesson exactly once (not duplicated)",
+          "passed": true,
+          "evidence": "fetchmany lesson lines: 1"
+        },
+        {
+          "text": "journal/2026-11-23.md has an export-timeout heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## export-timeout 15:01"
+        },
+        {
+          "text": "The reply reports the result of each closing step, including that git/backend cleanup was skipped",
+          "passed": true,
+          "evidence": "Per-step table: safety check skipped (no GitHub), backend cleanup skipped (notes-only), commit skipped"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 39.4,
+        "tokens": 54159,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "journal/2026-11-23.md has a dashboard-filters heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## dashboard-filters 15:00"
+        },
+        {
+          "text": "tasks/dashboard-filters.md records the react-day-picker choice and its reason under Decisions",
+          "passed": true,
+          "evidence": "- 2026-11-23: use react-day-picker for the range picker, because it's already a dependency in `web`."
+        },
+        {
+          "text": "tasks/dashboard-filters.md Next mentions converting dates to UTC",
+          "passed": true,
+          "evidence": "- Convert the selected range to UTC ISO strings before sending it to the API (start/end of day in the user's zone, then toISOString).\n- Check a range "
+        },
+        {
+          "text": "references/lessons.md contains the UTC lesson exactly once, with seen: 4 and last: 2026-11-23",
+          "passed": true,
+          "evidence": "1 line(s): o the API; the API assumes UTC. (repo: web; seen: 4; last: 2026-11-23; from: invoice-page)"
+        },
+        {
+          "text": "The reply mentions the UTC lesson as a candidate to promote into a rule or check",
+          "passed": true,
+          "evidence": "'this lesson has now caused trouble 4 times\u2026 should become a rule' with CLAUDE.md line / toApiDate() helper options"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 37.2,
+        "tokens": 51887,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply points out that tasks/backlog.md is empty or possibly emptied by mistake",
+          "passed": true,
+          "evidence": "'tasks/backlog.md is empty (0 bytes)\u2026 looks like something wiped it'"
+        },
+        {
+          "text": "The reply mentions the earlier session that ended without a journal entry",
+          "passed": true,
+          "evidence": "'One session ended without a journal entry: 2026-11-21 18:02'"
+        },
+        {
+          "text": "Those problems are raised before the task summary",
+          "passed": true,
+          "evidence": "Problems section comes before Active"
+        },
+        {
+          "text": "The reply lists both export-timeout and dashboard-filters with their next steps",
+          "passed": true,
+          "evidence": "Both tasks listed with Next steps"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 23.2,
+        "tokens": 45279,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "No file in the home repo contains the password Hunter2-prod-88",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "No file in the home repo contains the hostname pg-staging-02",
+          "passed": true,
+          "evidence": "not found in repo"
+        },
+        {
+          "text": "The reply explains why it was not saved and suggests a proper secret store or password manager",
+          "passed": true,
+          "evidence": "Cites the CLAUDE.md rule; suggests password manager / ~/.pgpass; suggests rotating"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 19.7,
+        "tokens": 45413,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "tasks/archive/export-timeout.md exists and has Decisions and Gotchas sections carried over from the task file",
+          "passed": true,
+          "evidence": "archive has Decisions+Gotchas"
+        },
+        {
+          "text": "tasks/active.md no longer lists export-timeout but still lists dashboard-filters",
+          "passed": true,
+          "evidence": "# Active | - [dashboard-filters](dashboard-filters.md): add date filters to the orders dashboard."
+        },
+        {
+          "text": "tasks/export-timeout.md has been removed",
+          "passed": true,
+          "evidence": "deleted"
+        },
+        {
+          "text": "references/lessons.md contains the fetchmany lesson exactly once (not duplicated)",
+          "passed": true,
+          "evidence": "fetchmany lesson lines: 1"
+        },
+        {
+          "text": "journal/2026-11-23.md has an export-timeout heading with an HH:MM time",
+          "passed": false,
+          "evidence": "## export-timeout"
+        },
+        {
+          "text": "The reply reports the result of each closing step, including that git/backend cleanup was skipped",
+          "passed": false,
+          "evidence": "Short summary only; mentions no git commit but no safety check (unlanded work) or backend step"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.8,
+        "passed": 4,
+        "failed": 1,
+        "total": 5,
+        "time_seconds": 25.2,
+        "tokens": 46403,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "journal/2026-11-23.md has a dashboard-filters heading with an HH:MM time",
+          "passed": true,
+          "evidence": "## dashboard-filters 15:01"
+        },
+        {
+          "text": "tasks/dashboard-filters.md records the react-day-picker choice and its reason under Decisions",
+          "passed": true,
+          "evidence": "- 2026-11-23: use react-day-picker for the date-range picker, because it's already a dependency in web (no new dep)."
+        },
+        {
+          "text": "tasks/dashboard-filters.md Next mentions converting dates to UTC",
+          "passed": true,
+          "evidence": "- Fix timezone handling: convert the selected range to UTC before the API call.\n- Check range edges (start-of-day / end-of-day) survive the UTC conver"
+        },
+        {
+          "text": "references/lessons.md contains the UTC lesson exactly once, with seen: 4 and last: 2026-11-23",
+          "passed": true,
+          "evidence": "1 line(s): assumes UTC. (repo: web; seen: 4; last: 2026-11-23; from: invoice-page, dashboard-filters)"
+        },
+        {
+          "text": "The reply mentions the UTC lesson as a candidate to promote into a rule or check",
+          "passed": false,
+          "evidence": "Reinforced the lesson but never suggests promoting it; suggests linking lessons from task files instead"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.5,
+        "passed": 2,
+        "failed": 2,
+        "total": 4,
+        "time_seconds": 29.5,
+        "tokens": 46662,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply points out that tasks/backlog.md is empty or possibly emptied by mistake",
+          "passed": false,
+          "evidence": "Never mentions the empty backlog"
+        },
+        {
+          "text": "The reply mentions the earlier session that ended without a journal entry",
+          "passed": true,
+          "evidence": "'A session wasn't logged\u2026 2026-11-21 at 18:02'"
+        },
+        {
+          "text": "Those problems are raised before the task summary",
+          "passed": false,
+          "evidence": "Problems listed after the tasks"
+        },
+        {
+          "text": "The reply lists both export-timeout and dashboard-filters with their next steps",
+          "passed": true,
+          "evidence": "Both tasks listed with Next steps"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 34.325,
+        "stddev": 6.024,
+        "min": 25.7,
+        "max": 39.4
+      },
+      "tokens": {
+        "mean": 52603.75,
+        "stddev": 2342.2154,
+        "min": 49618,
+        "max": 54751
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7418,
+        "stddev": 0.2114,
+        "min": 0.5,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 24.4,
+        "stddev": 4.0898,
+        "min": 19.7,
+        "max": 29.5
+      },
+      "tokens": {
+        "mean": 45939.25,
+        "stddev": 695.2939,
+        "min": 45279,
+        "max": 46662
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.26",
+      "time_seconds": "+9.9",
+      "tokens": "+6664"
+    }
+  },
+  "notes": [
+    "Non-discriminating: secret refusal, lesson reinforcement in end-of-day, journal/decision/next checks pass without the skill too. The sample repo's CLAUDE.md rules and self-describing lesson metadata already teach a capable agent most of the format.",
+    "Where the skill made the difference: the empty-file check at start of day (baseline missed the emptied backlog entirely), problems surfaced before the task list, a step-by-step close report including the unlanded-work safety check, timed journal headings, and flagging a recurring lesson for promotion.",
+    "Correct judgment beyond the checks: with the skill, close-task did not bump the lesson count because the lesson came from the same task. The original assertion expecting seen 2 was wrong and was replaced.",
+    "Behavior difference not graded: the baseline start-day edited tasks/active.md (removed the stored PR status) during what should be a read-only briefing; the skill run flagged it without editing.",
+    "Cost: with the skill, about 6-8k more tokens and 10-15s more per run (reads SKILL.md plus one routine and runs the script).",
+    "Gaps: none of the cases use a real git repo, so check-commit, the hooks and backend cleanup aren't exercised. Only 1 run per configuration, so there's no variance data."
+  ]
+}

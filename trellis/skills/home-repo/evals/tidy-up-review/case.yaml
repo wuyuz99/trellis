@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: tidy-up-review
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  The agent proposes demoting the old promoted upstream-branches rule from CLAUDE.md, proposes promoting the high-cost emptied-files lesson into a check or rule, identifies journal/2026-09-02.md as expirable while keeping journal/2026-09-01.md because export-timeout is still open, deletes nothing without confirmation, logs the review in the pattern log, and commits only after running the commit check.

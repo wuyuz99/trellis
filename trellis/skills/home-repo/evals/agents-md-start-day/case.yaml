@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: agents-md-start-day
+context:
+  scaffold_script: place-files.sh
+expected_outcome: |
+  In a Home Repo-pattern repo whose map is AGENTS.md (no CLAUDE.md) and that has a skills/ folder, the agent finds the repo, reads AGENTS.md as the map, runs the start-day routine (active tasks, latest journal, next steps), follows the owner's AGENTS.md convention by ending with a single "Today's one thing:" line, and does not create a CLAUDE.md, move skills/, or otherwise restructure the repo.
