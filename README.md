@@ -21,12 +21,12 @@ Then say "set up my home repo" (or "adopt my home repo"). Full documentation, pr
 |---|---|
 | `trellis/` | The plugin: skill, routines, templates, helper script, hooks, evals, smoke test. |
 | `.claude-plugin/marketplace.json` | Lets Claude Code install the plugin straight from this repo. |
-| `home-repo-workspace/` | Benchmark summaries from the pre-release eval iterations, with and without the skill (raw run outputs are kept out of git). |
+| `home-repo-workspace/` | Benchmark summary for each eval iteration, with and without the skill (raw run outputs are kept out of git). |
 
 ## Development
 
 - Smoke test (script and hooks, throwaway HOME): `bash trellis/tests/smoke.sh`
-- Evals: `claude plugin eval trellis --eval-dir skills/home-repo/evals` runs the cases in `trellis/skills/home-repo/evals/` (results go to its `results/` folder, which git ignores).
+- Evals: `claude plugin eval ./trellis --scaffold --allow-tools Bash Write Edit` runs the cases in `trellis/evals/` with and without the plugin (results go to `trellis/evals/results/`, which git ignores). The cases need a shell, and the eval CLI only grants one where it can sandbox it, so run them on Linux or macOS (on Windows, use WSL with `bubblewrap` and `socat` installed). `--scaffold` runs each case's own `place-files.sh`.
 - Validate manifests: `claude plugin validate .` and `claude plugin validate trellis`.
 
 The design is driven by de-identified usage reports (counts, trigger words and friction, never work content), produced by the skill's `system-report` routine. Those reports are kept out of this repo; `trellis/README.md` summarizes what each one showed.

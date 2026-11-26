@@ -1,0 +1,33 @@
+name: Bug
+description: The helper script, a hook, install or the smoke test fails.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Paste error output, but remove paths outside your home repo, hostnames and account names first. This issue is public.
+  - type: input
+    id: version
+    attributes:
+      label: Trellis version, OS, Python version
+      placeholder: "0.1.2, Windows 11, Python 3.12"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: What you ran
+      placeholder: "home_repo.py status, or the phrase you typed"
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What happened
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: smoke
+    attributes:
+      label: Output of `bash trellis/tests/smoke.sh` (if you can run it)
+      render: text

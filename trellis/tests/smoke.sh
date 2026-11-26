@@ -10,7 +10,7 @@ unset HOME_REPO
 mkdir -p "$HOME/.claude/projects/proj"
 cp -R "$SRC" "$T/trellis"
 RUN="bash $T/trellis/hooks/run.sh"
-EV="$T/trellis/skills/home-repo/evals"
+EV="$T/trellis/evals"
 H="$HOME/projects/home-repo"
 G="git -c core.autocrlf=false -c user.name=smoke -c user.email=smoke@example.com"
 fail=0
@@ -42,7 +42,7 @@ check "check-commit flags emptied non-ASCII file" \
   "cd $U && : > 'tasks/导出超时.md' && git add -A && HOME_REPO=$U guard_blocks 'EMPTIED: tasks/导出超时.md'"
 (cd "$U" && git checkout -q HEAD -- . && git reset -q)
 check "check-commit flags a renamed file that shrank" \
-  "cd $U && mkdir -p tasks/archive && git mv tasks/backlog.md tasks/archive/backlog.md && sed -i '9,\$d' tasks/archive/backlog.md && git add -A \
+  "cd $U && mkdir -p tasks/archive && git mv tasks/backlog.md tasks/archive/backlog.md && head -n 8 tasks/archive/backlog.md > tasks/archive/b.tmp && mv tasks/archive/b.tmp tasks/archive/backlog.md && git add -A \
    && HOME_REPO=$U guard_blocks 'SHRANK: tasks/backlog.md -> tasks/archive/backlog.md (renamed)'"
 (cd "$U" && git reset -q --hard)
 

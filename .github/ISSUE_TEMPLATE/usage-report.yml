@@ -1,0 +1,42 @@
+name: Usage report
+description: Share a de-identified system report from your home repo. This is how Trellis gets designed.
+title: "Usage report: <plugin version>, <days covered> days"
+labels: [usage-report]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! Reports like this are the design input for Trellis.
+
+        **How to make one:** in any Claude Code session, say "write a de-identified usage report for my home repo". The `system-report` routine writes `meta/system-report-<date>.md` with counts, the system's own file names, trigger words and generic descriptions only.
+
+        **Before you paste, read it yourself.** It should contain no task, note or code content, and no names of projects, clients, employers or people, hostnames, paths outside the home repo, or account names. Remove anything you're unsure about. This issue is public.
+  - type: input
+    id: version
+    attributes:
+      label: Trellis version
+      placeholder: "0.1.2"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      options: [Linux, macOS, Windows, WSL, Other]
+    validations:
+      required: true
+  - type: checkboxes
+    id: reviewed
+    attributes:
+      label: Privacy check
+      options:
+        - label: I read the whole report and it contains nothing I wouldn't post publicly.
+          required: true
+  - type: textarea
+    id: report
+    attributes:
+      label: Report
+      description: Paste the report (Markdown).
+      render: markdown
+    validations:
+      required: true

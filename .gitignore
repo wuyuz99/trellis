@@ -16,4 +16,4 @@ home-repo-workspace/*/*
 !home-repo-workspace/*/benchmark.json
 
 # claude plugin eval output
-trellis/skills/home-repo/evals/results/
+trellis/evals/results/

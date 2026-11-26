@@ -2,7 +2,7 @@
 
 *Your agent's lessons grow into rules, and get pruned when they stop paying off.*
 
-> **Status: early.** Designed from one person's real usage (two de-identified usage reports), with a smoke test that passes on Linux and Windows and an eval suite last benchmarked on a pre-release build. macOS is untested, and the session hooks haven't yet been used in day-to-day work. Expect routines to change as more usage data comes in.
+> **Status: early.** Designed from one person's real usage on two machines (three de-identified usage reports, the latest after a few days of daily use with the hooks), with a smoke test run in CI on Linux, macOS and Windows and an eval suite last run on 0.1.2. Expect routines to change as more usage data comes in, and if you use it, [your own report](#help-shape-it) is the most useful thing you can send.
 
 Trellis is a Claude Code plugin. It provides the **home-repo** skill, which manages your home repo (a **personal context repo**): a git-tracked folder of markdown that holds your tasks, decisions, lessons, journal and working style, so every agent session starts with the right context and nothing has to be explained twice.
 
@@ -22,7 +22,8 @@ trellis/
 ├── .claude-plugin/plugin.json
 ├── hooks/hooks.json, run.sh         SessionStart: points at the matching task file, recalls lessons, pending journals
 │                                    SessionEnd: records sessions that ended without a journal entry
-├── tests/smoke.sh                   script + hooks smoke test (bash tests/smoke.sh)
+├── tests/smoke.sh                   script + hooks smoke test (bash tests/smoke.sh), run in CI on Linux, macOS, Windows
+├── evals/                           7 eval cases with sample repos (claude plugin eval)
 └── skills/home-repo/
     ├── SKILL.md                     intent → routine map, layout, global rules
     ├── routines/                    one checklist per routine (loaded on demand)
@@ -31,8 +32,7 @@ trellis/
     ├── templates/                   CLAUDE.md, task, archive, lists, pattern-log
     ├── references/backends.md       worktree tool / git branches / none
     ├── references/knowledge.md      lesson format, reinforce, recall, promotion path
-    ├── scripts/home_repo.py         locate · now · status · check-commit · lessons · usage · journal-expire · rules · hooks
-    └── evals/                       7 test cases with sample repos
+    └── scripts/home_repo.py         locate · now · status · check-commit · lessons · usage · journal-expire · rules · hooks
 ```
 
 Requires `git`, `bash` (Git Bash on Windows) and Python 3.9+ on PATH as `python3`, `python` or `py`. `gh` is optional, for PR lookups.
@@ -106,6 +106,16 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 | Promotion path (lesson → rule / check / skill, user-approved) | Already happened by hand: an emptied-file commit became `check-commit`, a skipped step became the close checklist |
 | Lesson recall in the SessionStart hook | Makes relevant lessons show up without the agent having to know to search |
 
+## Help shape it
+
+Trellis is built from usage reports, and so far they all come from one person. If you use it for a week or two, a report from you is the most useful contribution:
+
+1. In any session, say "write a de-identified usage report for my home repo". The `system-report` routine writes `meta/system-report-<date>.md` in your home repo. It contains only counts, the system's own file names, trigger words and generic descriptions of what went wrong, never the content of your tasks, notes or code, and it shows you the full report and waits for your OK.
+2. Read it yourself and remove anything you'd rather not share.
+3. Open an issue with the **Usage report** template and paste it in.
+
+Bugs and routines that misfired (ran when they shouldn't, or didn't run when they should) have their own issue templates.
+
 ## Related tools
 
 | Tool | Overlap | How they fit together |
@@ -125,13 +135,13 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 - **0.1.0**: first public release. Task lifecycle (new, park, handoff, close with archive and journal digest), start-day / end-session / review / capture / commit routines, lessons with history that are reinforced, recalled at session start, promoted and demoted. Helper script (`locate`, `now`, `status`, `check-commit`, `lessons`, `usage`, `journal-expire`, `rules`), SessionStart/SessionEnd hooks, adoption of existing repos (including `AGENTS.md` / Home Repo pattern repos and Obsidian vaults), a de-identified `system-report` routine, 7 eval cases and a smoke test. Shaped by four private pre-release iterations and two usage reports; their findings are in the tables above.
 
 ## Known gaps / next questions
-- Do recalled lessons actually get reinforced? The next report should count `seen` changes.
+- Do recalled lessons get used? First Trellis report: 2 of 19 recalled lessons were reinforced later, and every session in a repo saw the same 5. 0.1.2 rotates recall; the next report should show whether more of them get used.
 - `usage` counts from shell commands are heuristic and can misattribute files named in the same command.
 - Demotion decisions still rely on the user's judgment; an automated with/without-rule eval would make them evidence-based.
 - `rules` finds standing rules with a phrase heuristic ("never…", "without my approval", "from now on"…). It will miss rules phrased otherwise and list some one-off instructions; the routines confirm each one with the user.
-- Second report (baseline: the original prompt-based setup the skill was designed from, not Trellis): task context loaded early in all 3 coding sessions but only at close in all 4 review/summary sessions; 33 lessons, 0 reinforced, read before work in 1 of 7 sessions; journal written only by closes. The first report after that machine switches to the skill should show whether the SessionStart pointer and lesson recall change those numbers.
+- First Trellis report (0.1.1, 3 days, 21 sessions) against the baseline: task file read unprompted 6 of 12 (was 3 of 7), 4 lessons reinforced (was 0 of 33), unjournaled work sessions 2 of 16 (was 1 of 8), triggering 34 of 34 with no false runs. Still weak: sessions that open with a direct request (review, explain) read the task file only at the end, and archive notes are never read again (0 of 11).
 - Ideas not built yet: a `## Tried` (what didn't work) section, decisions linked to the ones they replace.
-- Does the SessionStart pointer actually move context loading to the start of work? The next report should measure this.
+- Does the SessionStart pointer help? In the first Trellis report it was right in 0 of 10 new sessions (fixed in 0.1.2), so the gain above came from elsewhere. The next report should measure the fixed pointer.
 - `pending.md` uses a heuristic (≥3 user turns, no journal file written for a day the session spanned). It may be noisy.
 - Matching a task to the current directory uses the task name and `Repos:` line; repo names that also appear as ordinary folder names may give false matches.
 - Two archive formats existed in the source repo; the template sets one. Migrating old archives is not automated.

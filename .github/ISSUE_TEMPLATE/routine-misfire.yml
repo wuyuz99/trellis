@@ -1,0 +1,40 @@
+name: Routine misfire
+description: A routine ran when it shouldn't have, didn't run when it should, or skipped a step.
+title: "Misfire: <routine>"
+labels: [misfire]
+body:
+  - type: markdown
+    attributes:
+      value: Describe what happened generically. Leave out task content, project or people names, and paths outside your home repo. This issue is public.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What went wrong
+      options:
+        - Missed (I meant a routine and it didn't run)
+        - "False (a routine ran for something else: code review, a project commit, the agent's todo list…)"
+        - A step was skipped or done wrong
+        - SessionStart / SessionEnd hook output was wrong or noisy
+    validations:
+      required: true
+  - type: input
+    id: routine
+    attributes:
+      label: Routine
+      placeholder: "close-task, new-task, start-day, …"
+  - type: input
+    id: phrase
+    attributes:
+      label: What you typed (just the trigger words)
+      placeholder: "\"wrap this up\""
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Trellis version and OS
+      placeholder: "0.1.2, macOS"

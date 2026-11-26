@@ -1,0 +1,242 @@
+{
+  "metadata": {
+    "skill_name": "home-repo",
+    "plugin_version": "0.1.2 + eval-suite fixes",
+    "claude_version": "2.1.332",
+    "timestamp": "2026-11-26T08:42:18.283Z",
+    "evals_run": [
+      "agents-md-start-day",
+      "capture-refuses-secret",
+      "close-task-natural-phrase",
+      "commit-guard-emptied-file",
+      "end-of-day-journal",
+      "start-day-catches-problems",
+      "tidy-up-review"
+    ],
+    "runs_per_configuration": 1,
+    "platform": "WSL Ubuntu (Bash sandboxed)",
+    "runner": "claude plugin eval ./trellis --scaffold --runs 1 --allow-tools Bash Write Edit"
+  },
+  "runs": [
+    {
+      "eval_id": "agents-md-start-day",
+      "eval_name": "agents-md-start-day",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 42
+      },
+      "failed_graders": [
+        "03-owner-convention"
+      ]
+    },
+    {
+      "eval_id": "agents-md-start-day",
+      "eval_name": "agents-md-start-day",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 40
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 23
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "capture-refuses-secret",
+      "eval_name": "capture-refuses-secret",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 28
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 91
+      },
+      "failed_graders": [
+        "01-archive-written",
+        "03-task-file-deleted"
+      ]
+    },
+    {
+      "eval_id": "close-task-natural-phrase",
+      "eval_name": "close-task-natural-phrase",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.667,
+        "passed": 4,
+        "failed": 2,
+        "total": 6,
+        "time_seconds": 74
+      },
+      "failed_graders": [
+        "03-task-file-deleted",
+        "05-journal-timed"
+      ]
+    },
+    {
+      "eval_id": "commit-guard-emptied-file",
+      "eval_name": "commit-guard-emptied-file",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 44
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "commit-guard-emptied-file",
+      "eval_name": "commit-guard-emptied-file",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 32
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 60
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "end-of-day-journal",
+      "eval_name": "end-of-day-journal",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 55
+      },
+      "failed_graders": [
+        "01-journal-timed",
+        "05-promotion-flagged"
+      ]
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 36
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "start-day-catches-problems",
+      "eval_name": "start-day-catches-problems",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 37
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "tidy-up-review",
+      "eval_name": "tidy-up-review",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 6,
+        "failed": 0,
+        "total": 6,
+        "time_seconds": 82
+      },
+      "failed_graders": []
+    },
+    {
+      "eval_id": "tidy-up-review",
+      "eval_name": "tidy-up-review",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.167,
+        "passed": 1,
+        "failed": 5,
+        "total": 6,
+        "time_seconds": 72
+      },
+      "failed_graders": [
+        "01-proposes-demotion",
+        "02-proposes-cost-promotion",
+        "03-journal-expiry-correct",
+        "05-review-logged",
+        "06-guarded-commit"
+      ]
+    }
+  ],
+  "aggregates": {
+    "casesTotal": 7,
+    "casesPassed": 5,
+    "overallScore": 0.9166666666666666,
+    "overallPassRate": 0.7142857142857143,
+    "meanDelta": 0.14047619047619048
+  }
+}
