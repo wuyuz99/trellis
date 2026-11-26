@@ -731,6 +731,11 @@ COMMANDS = {
 }
 
 if __name__ == "__main__":
+    # Windows pipes default to the ANSI code page (cp1252), which can't print non-ASCII file names
+    # or "·"/"—"; check-commit then crashed instead of reporting. Always write UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
     ARG_COMMANDS = {"lessons": cmd_lessons, "usage": cmd_usage, "journal-expire": cmd_journal_expire,
                     "rules": cmd_rules}
     if len(sys.argv) >= 2 and sys.argv[1] in ARG_COMMANDS:
