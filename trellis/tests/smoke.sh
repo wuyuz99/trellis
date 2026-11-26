@@ -78,10 +78,23 @@ check "rules finds the stated rule"         "$RUN rules 30 | grep -q 'never push
 # hooks
 start() { echo "{\"cwd\":\"$1\",\"session_id\":\"s1\"}" | $RUN hook-session-start; }
 end() { echo "{\"cwd\":\"/work/orders-api\",\"transcript_path\":\"$PN/$1\"}" | $RUN hook-session-end; }
-check "SessionStart prints repo + task pointer" \
-  "start /work/orders-api | grep -q 'related to'"
+check "SessionStart points at tasks for the repo" \
+  "start /work/orders-api | grep -q 'Open tasks in this repo: tasks/export-timeout.md'"
 check "SessionStart ignores a task name inside a longer folder name" \
-  "! start /work/export-timeout-notes | grep -q 'related to'"
+  "! start /work/export-timeout-notes | grep -q 'tasks/export-timeout.md'"
+# a workspace named after its task: only that task, even though another task lists the same repo
+printf '# Other\n\nTicket: none | Backend: none | Repos: orders-api (base main)\n' > "$H/tasks/other-orders.md"
+check "SessionStart prefers the task named by the folder" \
+  "out=\$(start /work/orders-api/export-timeout) && echo \"\$out\" | grep -q 'This directory is task tasks/export-timeout.md' && ! echo \"\$out\" | grep -q other-orders"
+rm "$H/tasks/other-orders.md"
+# recall: 2 fixed slots + 3 rotating, stable within a session, varying across sessions
+cp "$H/references/lessons.md" "$T/lessons.bak"
+for i in $(seq 1 12); do printf -- '- Rotating lesson %02d. (repo: orders-api; seen: 1; last: 2026-11-%02d)\n' "$i" "$i" >> "$H/references/lessons.md"; done
+recall() { echo "{\"cwd\":\"/work/orders-api\",\"session_id\":\"$1\"}" | $RUN hook-session-start | grep '^  - '; }
+check "SessionStart recall is stable within a session" "[ \"\$(recall a)\" = \"\$(recall a)\" ]"
+check "SessionStart recall rotates across sessions" \
+  "[ \$(for s in a b c d e f; do recall \$s; done | sort -u | wc -l) -gt 5 ] && [ \$(recall a | wc -l) = 5 ]"
+cp "$T/lessons.bak" "$H/references/lessons.md"
 printf -- '## git\n- Check the staged diff for emptied files before committing. (repo: *; seen: 1; last: 2026-11-20; cost: high)\n' >> "$H/references/lessons.md"
 check "SessionStart recalls lessons tagged repo: *" \
   "start /work/orders-api | grep -q 'staged diff for emptied files'"

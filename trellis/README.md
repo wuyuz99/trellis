@@ -1,4 +1,4 @@
-# Trellis (v0.1.1)
+# Trellis (v0.1.2)
 
 *Your agent's lessons grow into rules, and get pruned when they stop paying off.*
 
@@ -87,6 +87,9 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 | `status` flags stray files in the repo root | Second report: a close sent its teardown log into the repo root |
 | "done / clean it up" in the shared-words table | Second report: "this is done, clean it up" got a project cleanup only; the task close came 9 min later |
 | Adopting a hand-run repo (guide file, lessons without metadata) | Second report: the source repo runs on its own routine guide and has 33 lessons without metadata |
+| Task pointer: folder-name match wins; task file written before the workspace | First Trellis report: the startup pointer was right in 0 of 10 new sessions (the session started before its task file existed, and a shared repo name matched the same unrelated tasks everywhere) |
+| Rotating lesson recall (2 fixed + 3 per session) | First Trellis report: recall showed the same 5 lessons to every session from a repo; 16 of 19 recalled were never reinforced |
+| Close from inside its own workspace hands teardown to the user | First Trellis report: 7 workspaces never torn down; a close inside its workspace couldn't remove it |
 
 **Kept on judgment** (not exercised in a 2-day cycle; confirm or cut using later reports):
 
@@ -117,6 +120,7 @@ Everything stays on your machine. Neither the script nor the hooks make network 
 | Agent-memory stores (e.g. [agentkb](https://github.com/isaac-flath/agentkb), MCP memory servers) | Automatic capture and recall of session knowledge | They automate capture; Trellis is the curation layer (reinforce, promote, demote). Capture wasn't where things failed in practice, upkeep was |
 
 ## Changelog
+- **0.1.2**: fixes from the first usage report with Trellis installed. The SessionStart task pointer now prefers the task whose name matches the folder and shows tasks that only share a repo as a weaker hint, so a shared repo name no longer crowds out the session's own task. New task writes the task file before creating the workspace, so a session opened in the workspace can see it. Lesson recall keeps the 2 strongest lessons and rotates the other 3 per session. Close task says what to do when it runs inside the workspace it has to remove.
 - **0.1.1**: fixes from a code review. `check-commit` now catches emptied or shrunk files with non-ASCII names and files that were moved and shrunk. SessionStart recalls lessons tagged `repo: *` after the repo's own lessons and matches task names only against whole folder names. SessionEnd counts a session as journaled only if it *wrote* a journal file for one of the days it spanned, not if it merely read today's. `usage` no longer counts sibling folders (such as `home-repo-workspace`) as the home repo, and counts each lesson change once. `journal-expire` keeps files that name an open task anywhere, not just in a heading. A configured home repo that is invalid is reported instead of silently falling back to a default location. The smoke test now isolates its checks and covers each fix.
 - **0.1.0**: first public release. Task lifecycle (new, park, handoff, close with archive and journal digest), start-day / end-session / review / capture / commit routines, lessons with history that are reinforced, recalled at session start, promoted and demoted. Helper script (`locate`, `now`, `status`, `check-commit`, `lessons`, `usage`, `journal-expire`, `rules`), SessionStart/SessionEnd hooks, adoption of existing repos (including `AGENTS.md` / Home Repo pattern repos and Obsidian vaults), a de-identified `system-report` routine, 7 eval cases and a smoke test. Shaped by four private pre-release iterations and two usage reports; their findings are in the tables above.
 

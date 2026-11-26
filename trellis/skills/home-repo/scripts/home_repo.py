@@ -23,6 +23,7 @@ import os
 import re
 import subprocess
 import sys
+import zlib
 from pathlib import Path
 
 CLAUDE_MD_BUDGET = 40
@@ -241,6 +242,19 @@ LESSON_META = re.compile(r"\((?P<meta>[^()]*\b(?:seen|repo|last|from)\s*:[^()]*)
 STALE_DAYS = 90
 PROMOTE_AT = 3
 MAX_RECALL = 5
+RECALL_FIXED = 2  # top-ranked lessons shown every session; the other slots rotate per session
+
+
+def pick_recall(recalled: list[dict], seed: str) -> list[dict]:
+    """The best RECALL_FIXED lessons, then a per-session rotation through the rest.
+
+    A fixed ranking showed the same 5 lessons to every session from a repo (16 of 19 never
+    reinforced), so the remaining slots rotate, seeded by the session id to stay stable within one."""
+    if len(recalled) <= MAX_RECALL:
+        return recalled
+    fixed, rest = recalled[:RECALL_FIXED], recalled[RECALL_FIXED:]
+    off = zlib.crc32(seed.encode("utf-8")) % len(rest)
+    return fixed + [rest[(off + i) % len(rest)] for i in range(min(MAX_RECALL - RECALL_FIXED, len(rest)))]
 
 
 def parse_lessons(repo: Path) -> list[dict]:
@@ -553,27 +567,32 @@ def cmd_hook_session_start() -> int:
     cwd = Path(data.get("cwd") or os.getcwd())
     lines = [f"[home-repo] Personal context repo: {repo}. Use the home-repo skill for day/session/task routines."]
 
-    # Does this directory belong to a task? Match whole cwd path components against task names
-    # and "Repos:" lines (a substring test would match task "api" in /work/orders-api).
-    hits = []
+    # Does this directory belong to a task? Match whole cwd path components (a substring test would
+    # match task "api" in /work/orders-api). A task-name match is strong: the workspace is named after
+    # the task. A "Repos:" match is weak: most tasks share a repo, so every session there matched the
+    # same few unrelated tasks and crowded out its own. Show repo matches only when no name matches.
+    named, by_repo = [], []
     cwd_parts = {p.lower() for p in cwd.parts}
-    for tf in (repo / "tasks").glob("*.md"):
+    for tf in sorted((repo / "tasks").glob("*.md")):
         if tf.name in ("active.md", "backlog.md"):
             continue
+        rel = tf.relative_to(repo).as_posix()
+        if tf.stem.lower() in cwd_parts:
+            named.append(rel)
+            continue
         head = "\n".join(read(tf).splitlines()[:4]).lower()
-        names = {tf.stem.lower()}
         m = re.search(r"repos:\s*([^\n(|]+)", head)
-        if m:
-            names |= {n.strip(" `").lower() for n in m.group(1).split(",") if n.strip()}
-        if names & cwd_parts:
-            hits.append(tf.relative_to(repo).as_posix())
-    if hits:
-        lines.append(f"[home-repo] This directory looks related to: {', '.join(hits[:3])}. Read it before starting work.")
+        if m and {n.strip(" `").lower() for n in m.group(1).split(",") if n.strip()} & cwd_parts:
+            by_repo.append(rel)
+    if named:
+        lines.append(f"[home-repo] This directory is task {', '.join(named[:3])}. Read it before starting work.")
+    elif by_repo:
+        lines.append(f"[home-repo] Open tasks in this repo: {', '.join(by_repo[:3])}. Read the one this session is for, if any.")
 
     recalled = lessons_for(repo, cwd)
     if recalled:
         lines.append(f"[home-repo] Lessons for this repo (references/lessons.md; reinforce any that help):")
-        for l in recalled[:MAX_RECALL]:
+        for l in pick_recall(recalled, str(data.get("session_id") or "")):
             lines.append(f"  - {l['text'][:180]}")
         if len(recalled) > MAX_RECALL:
             lines.append(f"  … {len(recalled) - MAX_RECALL} more: home_repo.py lessons --repo")
