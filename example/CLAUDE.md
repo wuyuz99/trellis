@@ -1,0 +1,16 @@
+# home-repo — Sam's personal context
+
+**Who:** backend developer. Main repos: `orders-api` (exports, billing), `web` (dashboard).
+**Style:** terse, explain the why, small PRs. Details → `references/style.md`
+**Task backend:** git worktrees, one per task, named after it. Push allowed: no.
+
+## Map (read only what you need)
+- `tasks/active.md`: current priorities. `tasks/<task>.md`: why/decisions/gotchas/next.
+- `tasks/backlog.md`: inactive work. `tasks/archive/`: closed tasks.
+- `journal/YYYY-MM-DD.md`: append-only session log.
+- `references/style.md`, `references/environment.md`, `references/lessons.md`: style, tools, cross-task lessons.
+- `meta/pattern-log.md`: how this system is working.
+
+## Rules
+- Compare branches by their upstream (`git rev-parse @{upstream}`), not by name.
+- No secrets, credentials, hostnames/IPs or customer data.
